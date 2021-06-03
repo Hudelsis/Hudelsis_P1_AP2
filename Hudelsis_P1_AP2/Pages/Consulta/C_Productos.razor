@@ -1,0 +1,220 @@
+﻿@page "/Consulta"
+
+@using Hudelsis_P1_AP2.BLL;
+@using Hudelsis_P1_AP2.Models;
+
+@inject IToastService toast
+
+<div class="card">
+    <div class="card-header">
+
+        <h3>Consultas Productos</h3>
+    </div>
+
+    <div class="card-body">
+        <form>
+            <label>Filtro</label>
+            <div class="col">
+                <select class="form-control" @bind="Filtro">
+                    <option value="0">Todos</option>
+                    <option value="1">Id</option>
+                    <option value="2">Descripción</option>
+                    <option value="3">Existencia</option>
+                    <option value="4">Costo</option>
+                </select>
+            </div>
+
+            <div class="form-row align-items-center">
+                <div class="col">
+                    <div class="form-group">
+                        <label>Criterio</label>
+                        <div class="input-group">
+                            <input type="text" @bind="Criterio" class="form-control">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary input-group-text" @onclick="Consultar">Consultar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ArticuloId</th>
+                            <th>Descripción</th>
+                            <th>Existencia</th>
+                            <th>Costo</th>
+                            <th>Valor Inventario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var articulo in ListaProductos)
+                        {
+                            <tr>
+                                <td>@articulo.ProductoId</td>
+                                <td>@articulo.Descripcion</td>
+                                <td>@articulo.Existencia</td>
+                                <td>@articulo.Costo</td>
+                                <td>@articulo.ValorInventario</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+        <div class="card-footer">
+            <label>Total de Valor Inventario:</label>
+            <input type="text" class="form-control" @bind="Total" readonly />
+        </div>
+    </div>
+</div>
+
+
+@code
+{
+    public List<Productos> ListaProductos { get; set; }
+
+    decimal Total = 0;
+    string Criterio = string.Empty;
+    int Filtro = 0;
+
+    protected override void OnInitialized()
+    {
+        Nuevo();
+    }
+
+    private void Nuevo()
+    {
+        ListaProductos = new List<Productos>();
+    }
+
+    public void Consultar()
+    {
+        try
+        {
+            decimal Valor = 0;
+            switch (Filtro)
+            {
+                case 0: //Todos
+                    this.ListaProductos = ProductosBLL.GetList(p => true);
+
+                    Valor = 0;
+                    if (ListaProductos != null)
+                    {
+                        foreach (var item in ListaProductos)
+                        {
+                            Valor += item.ValorInventario;
+                        }
+
+                        Total = Valor;
+                    }
+
+                    break;
+                case 1: //Id
+                    int id = 0;
+                    try
+                    {
+                        id = Convert.ToInt32(Criterio);
+                    }
+                    catch (Exception)
+                    {
+                        toast.ShowError("El Id debe ser Numero Entero..");
+                    }
+                    this.ListaProductos = ProductosBLL.GetList(a => a.ProductoId == id);
+
+                    Valor = 0;
+                    if (ListaProductos != null)
+                    {
+                        foreach (var item in ListaProductos)
+                        {
+                            Valor += item.ValorInventario;
+                        }
+
+                        Total = Valor;
+                    }
+                    break;
+                case 2: //descripcion
+                    this.ListaProductos = ProductosBLL.GetList(a => a.Descripcion == Criterio);
+
+                    Valor = 0;
+                    if (ListaProductos != null)
+                    {
+                        foreach (var item in ListaProductos)
+                        {
+                            Valor += item.ValorInventario;
+                        }
+
+                        Total = Valor;
+                    }
+                    break;
+                case 3: //existencia
+                    int Existencia = 0;
+                    try
+                    {
+                        Existencia = Convert.ToInt32(Criterio);
+                    }
+                    catch (Exception)
+                    {
+                        toast.ShowError("la Existencia debe ser Numero Entero");
+                    }
+                    this.ListaProductos = ProductosBLL.GetList(a => a.Existencia == Existencia);
+
+                    Valor = 0;
+                    if (ListaProductos != null)
+                    {
+                        foreach (var item in ListaProductos)
+                        {
+                            Valor += item.ValorInventario;
+                        }
+
+                        Total = Valor;
+                    }
+                    break;
+                case 4: //costo
+                    decimal Costo = 0;
+                    try
+                    {
+                        Costo = Convert.ToDecimal(Criterio);
+                    }
+                    catch (Exception)
+                    {
+                        toast.ShowError("la Costo debe ser numerico...");
+                    }
+                    this.ListaProductos = ProductosBLL.GetList(a => a.Costo == Costo);
+                    Valor = 0;
+                    if (ListaProductos != null)
+                    {
+                        foreach (var item in ListaProductos)
+                        {
+                            Valor += item.ValorInventario;
+                        }
+
+                        Total = Valor;
+                    }
+                    break;
+                default:
+                    this.ListaProductos = ProductosBLL.GetList(p => true);
+                    Valor = 0;
+                    if (ListaProductos != null)
+                    {
+                        foreach (var item in ListaProductos)
+                        {
+                            Valor += item.ValorInventario;
+                        }
+
+                        Total = Valor;
+                    }
+                    break;
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+}
+
